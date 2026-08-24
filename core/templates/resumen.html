@@ -1,0 +1,113 @@
+<!doctype html>
+<html lang="es">
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<title>Clasificador de correos | RAG Mail Triage</title>
+	<style>
+		:root { --ink: #17231f; --muted: #63706a; --paper: #f5f1e8; --panel: #fffdf8; --line: #d8d4c8; --green: #176b52; --green-dark: #0e4938; --coral: #d9644f; --shadow: 0 18px 50px rgba(37, 45, 37, .10); }
+		* { box-sizing: border-box; }
+		body { margin: 0; color: var(--ink); background: radial-gradient(circle at 90% 5%, #dce8d8 0, transparent 30%), var(--paper); font-family: Georgia, "Times New Roman", serif; }
+		.shell { width: min(1120px, calc(100% - 36px)); margin: 0 auto; padding: 44px 0 64px; }
+		header { display: flex; justify-content: space-between; gap: 24px; align-items: end; margin-bottom: 34px; }
+		.eyebrow { color: var(--coral); font: 700 12px/1.2 Arial, sans-serif; letter-spacing: 2px; text-transform: uppercase; }
+		h1 { font-size: clamp(36px, 6vw, 70px); line-height: .95; letter-spacing: -2px; margin: 10px 0 0; max-width: 700px; }
+		.intro { color: var(--muted); font: 15px/1.5 Arial, sans-serif; max-width: 260px; margin: 0; }
+		.workspace { display: grid; grid-template-columns: minmax(0, 1.2fr) minmax(300px, .8fr); gap: 22px; align-items: start; }
+		.panel { background: rgba(255, 253, 248, .88); border: 1px solid var(--line); box-shadow: var(--shadow); padding: 28px; }
+		.panel h2 { font-size: 25px; margin: 0 0 22px; }
+		label { display: block; font: 700 12px/1.2 Arial, sans-serif; letter-spacing: .8px; text-transform: uppercase; margin: 18px 0 8px; }
+		input, textarea { width: 100%; border: 1px solid var(--line); background: #fffefa; color: var(--ink); font: 16px/1.45 Arial, sans-serif; padding: 13px 14px; border-radius: 2px; }
+		input:focus, textarea:focus { outline: 3px solid rgba(23, 107, 82, .18); border-color: var(--green); }
+		textarea { min-height: 190px; resize: vertical; }
+		button { width: 100%; margin-top: 22px; border: 0; border-radius: 2px; background: var(--green); color: white; cursor: pointer; font: 700 14px Arial, sans-serif; padding: 15px 18px; }
+		button:hover { background: var(--green-dark); }
+		button:disabled { cursor: wait; opacity: .65; }
+		.hint { color: var(--muted); font: 12px/1.45 Arial, sans-serif; margin: 12px 0 0; }
+		.result { min-height: 310px; }
+		.empty { color: var(--muted); font: 15px/1.5 Arial, sans-serif; border-left: 3px solid var(--line); padding: 4px 0 4px 16px; }
+		.result-content[hidden], .error[hidden] { display: none; }
+		.result-top { display: flex; justify-content: space-between; align-items: start; gap: 12px; }
+		.category { display: inline-block; color: var(--green-dark); background: #dcebe1; padding: 8px 10px; font: 700 12px Arial, sans-serif; }
+		.priority { text-align: right; color: var(--coral); font: 700 36px/1 Arial, sans-serif; }
+		.priority small { display: block; color: var(--muted); font-size: 10px; letter-spacing: 1px; }
+		.summary { font-size: 23px; line-height: 1.2; margin: 30px 0 22px; }
+		.detail { border-top: 1px solid var(--line); padding: 15px 0; font: 14px/1.5 Arial, sans-serif; }
+		.detail strong { display: block; color: var(--muted); font-size: 11px; letter-spacing: .8px; text-transform: uppercase; margin-bottom: 5px; }
+		.meta { color: var(--muted); font: 11px Arial, sans-serif; margin-top: 18px; }
+		.error { color: #a33b2d; background: #f8e1dc; padding: 12px; font: 13px Arial, sans-serif; margin-top: 18px; }
+		@media (max-width: 760px) { .shell { padding-top: 28px; } header { display: block; } .intro { margin-top: 18px; max-width: 520px; } .workspace { grid-template-columns: 1fr; } .panel { padding: 22px; } }
+	</style>
+</head>
+<body>
+	<main class="shell">
+		<header>
+			<div><div class="eyebrow">RAG Mail Triage / entorno local</div><h1>Clasifica un correo en vivo.</h1></div>
+			<p class="intro">Pega un mensaje y el motor lo comparara con el historial para sugerir prioridad y proxima accion.</p>
+		</header>
+		<section class="workspace">
+			<form class="panel" id="classify-form">
+				<h2>Correo entrante</h2>
+				<label for="sender">Remitente</label>
+				<input id="sender" type="email" value="alertas@empresa.com" required>
+				<label for="subject">Asunto</label>
+				<input id="subject" type="text" placeholder="Ej: Corte urgente del servicio" required>
+				<label for="body">Cuerpo del correo</label>
+				<textarea id="body" placeholder="Escribe o pega aqui el contenido del correo..." required></textarea>
+				<button id="submit-button" type="submit">Clasificar correo</button>
+				<p class="hint">El analisis ocurre localmente. Ollama es opcional: sin el modelo activo se usa el fallback heuristico.</p>
+				<div class="error" id="error" hidden></div>
+			</form>
+			<section class="panel result" aria-live="polite">
+				<h2>Resultado</h2>
+				<p class="empty" id="empty">El resultado de la clasificacion aparecera aqui.</p>
+				<div class="result-content" id="result-content" hidden>
+					<div class="result-top"><span class="category" id="category"></span><div class="priority"><span id="priority"></span><small>PRIORIDAD / 5</small></div></div>
+					<p class="summary" id="summary"></p>
+					<div class="detail"><strong>Accion sugerida</strong><span id="action"></span></div>
+					<div class="detail"><strong>Casos historicos similares</strong><span id="matches"></span></div>
+					<p class="meta" id="meta"></p>
+				</div>
+			</section>
+		</section>
+	</main>
+	<script>
+		const form = document.querySelector('#classify-form');
+		const button = document.querySelector('#submit-button');
+		const empty = document.querySelector('#empty');
+		const resultContent = document.querySelector('#result-content');
+		const error = document.querySelector('#error');
+		form.addEventListener('submit', async (event) => {
+			event.preventDefault();
+			button.disabled = true;
+			button.textContent = 'Analizando...';
+			error.hidden = true;
+			const payload = {
+				message_id: `LOCAL-${Date.now()}`,
+				from: document.querySelector('#sender').value.trim(),
+				subject: document.querySelector('#subject').value.trim(),
+				body: document.querySelector('#body').value.trim()
+			};
+			try {
+				const response = await fetch('/api/classify/', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+				const data = await response.json();
+				if (!response.ok) throw new Error(data.error || 'No se pudo clasificar el correo.');
+				document.querySelector('#category').textContent = data.category;
+				document.querySelector('#priority').textContent = data.priority;
+				document.querySelector('#summary').textContent = data.summary;
+				document.querySelector('#action').textContent = data.suggested_action;
+				document.querySelector('#matches').textContent = data.matched_history_ids.length ? data.matched_history_ids.join(', ') : 'Sin coincidencias relevantes';
+				document.querySelector('#meta').textContent = `${data.fallback_used ? 'Fallback heuristico' : 'Ollama'} · ${data.execution_time_ms} ms · ${data.message_id}`;
+				empty.hidden = true;
+				resultContent.hidden = false;
+			} catch (requestError) {
+				error.textContent = requestError.message;
+				error.hidden = false;
+			} finally {
+				button.disabled = false;
+				button.textContent = 'Clasificar correo';
+			}
+		});
+	</script>
+</body>
+</html>

@@ -22,5 +22,25 @@
     "body": "Estimados colaboradores, recuerden contestar la encuesta anual antes del viernes. Agradecemos su participación.",
     "priority_score": 1,
     "category": "Informativo"
+  },
+  {
+    "id": "LIVE-PERSIST-001",
+    "from": "compras@empresa.com",
+    "subject": "Contrato para firma",
+    "body": "Solicitamos la firma del convenio adjunto.",
+    "priority_score": 4,
+    "category": "Requiere firma",
+    "summary": "Procesamiento sobre: Contrato para firma",
+    "suggested_action": "Revisar documento legal y gestionar firma electrónica."
+  },
+  {
+    "id": "LOCAL-1787605549361",
+    "from": "contacto@empresa.com",
+    "subject": "consulta",
+    "body": "como puedo obtener su numero de telefono",
+    "priority_score": 2,
+    "category": "Informativo",
+    "summary": "Procesamiento sobre: consulta",
+    "suggested_action": "Archivar o revisar al cierre de la jornada."
   }
 ]
