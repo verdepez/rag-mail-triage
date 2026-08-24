@@ -1,0 +1,46 @@
+[
+  {
+    "id": "MSG-001",
+    "from": "soporte_infra@vendor.com",
+    "subject": "Corte programado y suspensión de servidores",
+    "body": "El contrato de hosting vence hoy. Si no se registra la orden de compra antes de las 18:00, se suspenderán los servicios de producción.",
+    "priority_score": 5,
+    "category": "Ticket crítico"
+  },
+  {
+    "id": "MSG-002",
+    "from": "legal@empresa.com",
+    "subject": "Contrato de prestación de servicios para visado",
+    "body": "Adjunto el convenio marco con el nuevo proveedor. Quedamos a la espera de su firma digital y visto bueno para proceder.",
+    "priority_score": 4,
+    "category": "Requiere firma"
+  },
+  {
+    "id": "MSG-003",
+    "from": "rrhh@empresa.com",
+    "subject": "Recordatorio: Encuesta de clima laboral",
+    "body": "Estimados colaboradores, recuerden contestar la encuesta anual antes del viernes. Agradecemos su participación.",
+    "priority_score": 1,
+    "category": "Informativo"
+  },
+  {
+    "id": "LIVE-PERSIST-001",
+    "from": "compras@empresa.com",
+    "subject": "Contrato para firma",
+    "body": "Solicitamos la firma del convenio adjunto.",
+    "priority_score": 4,
+    "category": "Requiere firma",
+    "summary": "Procesamiento sobre: Contrato para firma",
+    "suggested_action": "Revisar documento legal y gestionar firma electrónica."
+  },
+  {
+    "id": "LOCAL-1787605549361",
+    "from": "contacto@empresa.com",
+    "subject": "consulta",
+    "body": "como puedo obtener su numero de telefono",
+    "priority_score": 2,
+    "category": "Informativo",
+    "summary": "Procesamiento sobre: consulta",
+    "suggested_action": "Archivar o revisar al cierre de la jornada."
+  }
+]

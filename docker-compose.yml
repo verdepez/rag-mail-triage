@@ -1,0 +1,14 @@
+services:
+
+  backend:
+
+    build: .
+
+    container_name: rag-mail-triage
+
+    volumes:
+      - .:/app
+
+    ports:
+      - "${APP_PORT:-8000}:8080"
+    command: tail -f /dev/null
