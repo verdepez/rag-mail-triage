@@ -6,7 +6,7 @@ from unittest.mock import patch
 from django.test import Client, SimpleTestCase
 
 from core import views
-from solucion import JSONRagEngine, analyze_email, clean_email_body
+from solucion import JSONRagEngine, analyze_email, clean_email_body, select_ollama_model
 
 
 class TriageTests(SimpleTestCase):
@@ -26,12 +26,27 @@ class TriageTests(SimpleTestCase):
 		self.assertEqual(cleaned, "El servicio presenta error 500.")
 
 	def test_analyze_email_uses_critical_fallback(self):
-		with patch("solucion.requests.post", side_effect=Exception("Ollama offline")):
+		with patch("solucion.requests.get", side_effect=Exception("Ollama offline")), patch(
+			"solucion.requests.post", side_effect=Exception("Ollama offline")
+		):
 			result = analyze_email(self.email, self.engine)
 
 		self.assertTrue(result["fallback_used"])
 		self.assertEqual(result["priority"], 5)
 		self.assertEqual(result["category"], "Ticket crítico")
+
+	def test_selects_available_generative_model(self):
+		response = type("Response", (), {
+			"status_code": 200,
+			"json": lambda self: {"models": [
+				{"name": "nomic-embed-text:latest"},
+				{"name": "qwen2.5:3b"},
+			]},
+		})()
+		with patch("solucion.requests.get", return_value=response):
+			model = select_ollama_model("llama3")
+
+		self.assertEqual(model, "qwen2.5:3b")
 
 	def test_classify_endpoint_returns_json(self):
 		with tempfile.TemporaryDirectory() as temporary_directory:
@@ -39,7 +54,9 @@ class TriageTests(SimpleTestCase):
 			dataset_path.write_text("[]", encoding="utf-8")
 			with patch.object(views, "DATASET_PATH", dataset_path), patch.object(
 				views, "rag_engine", JSONRagEngine(str(dataset_path))
-			), patch("solucion.requests.post", side_effect=Exception("Ollama offline")):
+			), patch("solucion.requests.get", side_effect=Exception("Ollama offline")), patch(
+				"solucion.requests.post", side_effect=Exception("Ollama offline")
+			):
 				response = self.client.post(
 					"/api/classify/", data=self.email, content_type="application/json"
 				)
@@ -53,7 +70,9 @@ class TriageTests(SimpleTestCase):
 			dataset_path.write_text("[]", encoding="utf-8")
 			with patch.object(views, "DATASET_PATH", dataset_path), patch.object(
 				views, "rag_engine", JSONRagEngine(str(dataset_path))
-			), patch("solucion.requests.post", side_effect=Exception("Ollama offline")):
+			), patch("solucion.requests.get", side_effect=Exception("Ollama offline")), patch(
+				"solucion.requests.post", side_effect=Exception("Ollama offline")
+			):
 				response = self.client.post(
 					"/api/classify/", data=self.email, content_type="application/json"
 				)

@@ -2,7 +2,7 @@
 
 Microservicio Django local para clasificar correos con contexto histórico de `datos.json`. No utiliza base de datos ni requiere Ollama: si Ollama no está disponible, aplica el fallback heurístico.
 
-Cada correo válido enviado a `POST /api/classify/` queda guardado en `datos.json` con su clasificación. Si se repite el mismo `message_id`, la entrada se actualiza en vez de duplicarse.
+Cada correo válido enviado a `POST /api/classify/` queda guardado en `datos.json` con su clasificación. Si se repite el mismo `message_id` o el mismo contenido, no se duplica. El cliente detecta automáticamente los modelos instalados en Ollama; configura `OLLAMA_TIMEOUT_SECONDS` en `.env` si el primer arranque del modelo tarda más.
 
 ## Ejecutar en local
 
