@@ -1,0 +1,26 @@
+[
+  {
+    "id": "MSG-001",
+    "from": "soporte_infra@vendor.com",
+    "subject": "Corte programado y suspensión de servidores",
+    "body": "El contrato de hosting vence hoy. Si no se registra la orden de compra antes de las 18:00, se suspenderán los servicios de producción.",
+    "priority_score": 5,
+    "category": "Ticket crítico"
+  },
+  {
+    "id": "MSG-002",
+    "from": "legal@empresa.com",
+    "subject": "Contrato de prestación de servicios para visado",
+    "body": "Adjunto el convenio marco con el nuevo proveedor. Quedamos a la espera de su firma digital y visto bueno para proceder.",
+    "priority_score": 4,
+    "category": "Requiere firma"
+  },
+  {
+    "id": "MSG-003",
+    "from": "rrhh@empresa.com",
+    "subject": "Recordatorio: Encuesta de clima laboral",
+    "body": "Estimados colaboradores, recuerden contestar la encuesta anual antes del viernes. Agradecemos su participación.",
+    "priority_score": 1,
+    "category": "Informativo"
+  }
+]
