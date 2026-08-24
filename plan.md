@@ -8,18 +8,18 @@
 ---
 
 ## 1. Problema
-El personal administrativo enfrenta episodios recurrentes de saturación y estrés operativo debido a la acumulación masiva de correos electrónicos no leídos y solicitudes desordenadas [cite: 2]. Las bandejas de entrada tradicionales no cuentan con una jerarquización contextual ni discriminan la urgencia real frente a casos históricos, lo que genera retrasos en tareas críticas (bloqueos operativos, vencimiento de plazos, cortes de servicio) y pérdida de tiempo en lectura de correos meramente informativos o con cadenas de texto redundantes [cite: 2].
+El personal administrativo enfrenta episodios recurrentes de saturación y estrés operativo debido a la acumulación masiva de correos electrónicos no leídos y solicitudes desordenadas. Las bandejas de entrada tradicionales no cuentan con una jerarquización contextual ni discriminan la urgencia real frente a casos históricos, lo que genera retrasos en tareas críticas (bloqueos operativos, vencimiento de plazos, cortes de servicio) y pérdida de tiempo en lectura de correos meramente informativos o con cadenas de texto redundantes.
 
 ---
 
 ## 2. Solución
-Desarrollar un microservicio desacoplado en **Python y Django** que opere **sin base de datos relacional ni ORM (`DATABASES = {}`)**, procesando la información directamente en memoria y mediante el archivo **`datos.json`** en la raíz del proyecto [cite: 2].
+Desarrollar un microservicio desacoplado en **Python y Django** que opere **sin base de datos relacional ni ORM (`DATABASES = {}`)**, procesando la información directamente en memoria y mediante el archivo **`datos.json`** en la raíz del proyecto.
 
 El sistema:
-1. Recibe el correo en formato JSON a través de una vista (`core/views.py`) [cite: 2].
-2. Aplica un pipeline de sanitización (eliminación de HTML, firmas, disclaimers y respuestas anidadas) implementado de forma modular en `solucion.py` [cite: 2].
-3. Realiza una búsqueda de contexto RAG en memoria comparando el mensaje contra el dataset `datos.json` mediante vectorización TF-IDF y similitud de coseno (`solucion.py`) [cite: 2].
-4. Consulta un modelo LLM local (Ollama) o activa una heurística de contingencia inmediata para generar un resumen ejecutivo, un puntaje de prioridad (1 al 5), una categoría operativa y una acción sugerida [cite: 2].
+1. Recibe el correo en formato JSON a través de una vista (`core/views.py`).
+2. Aplica un pipeline de sanitización (eliminación de HTML, firmas, disclaimers y respuestas anidadas) implementado de forma modular en `solucion.py`.
+3. Realiza una búsqueda de contexto RAG en memoria comparando el mensaje contra el dataset `datos.json` mediante vectorización TF-IDF y similitud de coseno (`solucion.py`).
+4. Consulta un modelo LLM local (Ollama) o activa una heurística de contingencia inmediata para generar un resumen ejecutivo, un puntaje de prioridad (1 al 5), una categoría operativa y una acción sugerida.
 5. Provee tanto una API JSON como una interfaz web básica de visualización a través de `core/templates/resumen.html`.
 
 ---
@@ -27,10 +27,10 @@ El sistema:
 ## 3. Alcance
 
 ### Enfoque Arquitectural
-* **Stateless Backend:** Proyecto Django estándar (`miproyecto/` como directorio de configuración y `core/` como aplicación principal) configurado sin migraciones SQL [cite: 2].
-* **Persistencia en `datos.json`:** Carga y lectura del archivo de datos en la raíz para indexación vectorial en memoria [cite: 2].
+* **Stateless Backend:** Proyecto Django estándar (`miproyecto/` como directorio de configuración y `core/` como aplicación principal) configurado sin migraciones SQL.
+* **Persistencia en `datos.json`:** Carga y lectura del archivo de datos en la raíz para indexación vectorial en memoria.
 * **Modularidad Centralizada:** Lógica de negocio, RAG, sanitización y cliente LLM encapsulados en `solucion.py`, consumidos directamente por `core/views.py` y `core/apps.py`.
-* **Privacidad On-Premise & Resiliencia:** Procesamiento local con fallback determinista en caso de desconexión del LLM [cite: 2].
+* **Privacidad On-Premise & Resiliencia:** Procesamiento local con fallback determinista en caso de desconexión del LLM .
 
 ---
 
@@ -38,10 +38,10 @@ El sistema:
 
 | Categoría | Requerimientos |
 | :--- | :--- |
-| **Must Have** *(Imprescindible)* | • Configuración de Django sin base de datos (`DATABASES = {}` en `miproyecto/settings.py`) [cite: 2].<br>• Ingesta y lectura directa de `datos.json` [cite: 2].<br>• Lógica de sanitización y motor RAG TF-IDF en memoria dentro de `solucion.py` [cite: 2].<br>• Cliente de inferencia HTTP con timeout para Ollama (`llama3`) con fallback en `solucion.py` [cite: 2].<br>• Endpoints y vistas en `core/views.py` para procesar payloads JSON [cite: 2].<br>• Template `core/templates/resumen.html` para previsualización de resultados. |
-| **Should Have** *(Importante)* | • Endpoint/acción en `core/views.py` para recargar `datos.json` en caliente sin reiniciar el servidor.<br>• Reporte de tiempos de ejecución (`execution_time_ms`) e IDs coincidentes (`matched_history_ids`) [cite: 2].<br>• Suite de tests en `core/tests.py` para validar sanitización, RAG y vistas [cite: 2]. |
+| **Must Have** *(Imprescindible)* | • Configuración de Django sin base de datos (`DATABASES = {}` en `miproyecto/settings.py`) [cite: 2].<br>• Ingesta y lectura directa de `datos.json` [cite: 2].<br>• Lógica de sanitización y motor RAG TF-IDF en memoria dentro de `solucion.py` [cite: 2].<br>• Cliente de inferencia HTTP con timeout para Ollama (`llama3`) con fallback en `solucion.py` .<br>• Endpoints y vistas en `core/views.py` para procesar payloads JSON [cite: 2].<br>• Template `core/templates/resumen.html` para previsualización de resultados. |
+| **Should Have** *(Importante)* | • Endpoint/acción en `core/views.py` para recargar `datos.json` en caliente sin reiniciar el servidor.<br>• Reporte de tiempos de ejecución (`execution_time_ms`) e IDs coincidentes (`matched_history_ids`).<br>• Suite de tests en `core/tests.py` para validar sanitización, RAG y vistas. |
 | **Could Have** *(Deseable)* | • Contenedorización lista para producción mediante `Dockerfile` y `docker-compose.yml`.<br>• Variables de entorno parametrizadas vía `.env` y documentadas en `.env.example`. |
-| **Won't Have** *(Fuera de alcance)* | • Migraciones o persistencia en PostgreSQL, MySQL o SQLite (`core/models.py` queda vacío/sin ORM) [cite: 2].<br>• Dependencia de APIs cloud de terceros (OpenAI, Anthropic) [cite: 2]. |
+| **Won't Have** *(Fuera de alcance)* | • Migraciones o persistencia en PostgreSQL, MySQL o SQLite (`core/models.py` queda vacío/sin ORM) [cite: 2].<br>• Dependencia de APIs cloud de terceros (OpenAI, Anthropic). |
 
 ---
 
