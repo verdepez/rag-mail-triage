@@ -13,6 +13,31 @@ ALLOWED_CATEGORIES = [
     "Requiere firma",
     "Informativo",
 ]
+OLLAMA_HOST = os.getenv("OLLAMA_HOST", "http://localhost:11434")
+OLLAMA_TIMEOUT_SECONDS = float(os.getenv("OLLAMA_TIMEOUT_SECONDS", "60"))
+
+
+def select_ollama_model(preferred_model: str = "llama3") -> str | None:
+    """Devuelve el modelo generativo disponible más adecuado en Ollama."""
+    try:
+        response = requests.get(f"{OLLAMA_HOST}/api/tags", timeout=0.5)
+        if response.status_code != 200:
+            return None
+        models = [item.get("name", "") for item in response.json().get("models", [])]
+    except (requests.RequestException, ValueError, TypeError):
+        return None
+
+    generative_models = [
+        model for model in models
+        if model and "embed" not in model.lower()
+    ]
+    if preferred_model in generative_models:
+        return preferred_model
+    preferred_base = preferred_model.split(":", 1)[0]
+    for model in generative_models:
+        if model.split(":", 1)[0] == preferred_base:
+            return model
+    return generative_models[0] if generative_models else None
 
 
 # ==========================================
@@ -106,9 +131,10 @@ class JSONRagEngine:
 # 3. ANALIZADOR DE TRIAGE (LLM + FALLBACK)
 # ==========================================
 def analyze_email(
-    email: dict, rag_engine: JSONRagEngine, ollama_model: str = "llama3"
+    email: dict, rag_engine: JSONRagEngine, ollama_model: str | None = None
 ) -> dict:
     start_time = time.time()
+    ollama_model = ollama_model or os.getenv("OLLAMA_MODEL", "llama3")
 
     # 1. Validación de esquema y datos
     is_valid, validation_error = validate_email_payload(email)
@@ -162,15 +188,18 @@ Responde ÚNICAMENTE un JSON válido con las siguientes claves:
 """
 
     try:
+        available_model = select_ollama_model(ollama_model)
+        if not available_model:
+            raise requests.RequestException("No hay un modelo generativo disponible")
         response = requests.post(
-            "http://localhost:11434/api/generate",
+            f"{OLLAMA_HOST}/api/generate",
             json={
-                "model": ollama_model,
+                "model": available_model,
                 "prompt": prompt,
                 "stream": False,
                 "format": "json",
             },
-            timeout=2.5,
+            timeout=OLLAMA_TIMEOUT_SECONDS,
         )
         if response.status_code == 200:
             parsed = json.loads(response.json().get("response", "{}"))

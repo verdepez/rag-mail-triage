@@ -42,5 +42,45 @@
     "category": "Informativo",
     "summary": "Procesamiento sobre: consulta",
     "suggested_action": "Archivar o revisar al cierre de la jornada."
+  },
+  {
+    "id": "LOCAL-1787605966520",
+    "from": "pablo@empresa.com",
+    "subject": "sistema caido",
+    "body": "no tengo acceso a los servicios",
+    "priority_score": 2,
+    "category": "Informativo",
+    "summary": "Procesamiento sobre: sistema caido",
+    "suggested_action": "Archivar o revisar al cierre de la jornada."
+  },
+  {
+    "id": "LOCAL-1787609306328",
+    "from": "pablo@empresa.com",
+    "subject": "sistema caido todo no responde",
+    "body": "no tengo acceso a los servicios favor contestar urgente",
+    "priority_score": 5,
+    "category": "Ticket crítico",
+    "summary": "Procesamiento sobre: sistema caido todo no responde",
+    "suggested_action": "Escalar a jefatura y resolver de inmediato."
+  },
+  {
+    "id": "OLLAMA-CHECK-001",
+    "from": "prueba@empresa.com",
+    "subject": "Consulta de prueba",
+    "body": "Necesito confirmar si el sistema responde.",
+    "priority_score": 4,
+    "category": "Requiere firma",
+    "summary": "Procesamiento sobre: Consulta de prueba",
+    "suggested_action": "Revisar documento legal y gestionar firma electrónica."
+  },
+  {
+    "id": "OLLAMA-LIVE-001",
+    "from": "legal@empresa.com",
+    "subject": "Contrato para firma",
+    "body": "Solicitamos la firma del convenio adjunto.",
+    "priority_score": 4,
+    "category": "Requiere firma",
+    "summary": "Procesamiento sobre: Contrato para firma",
+    "suggested_action": "Revisar documento legal y gestionar firma electrónica."
   }
 ]

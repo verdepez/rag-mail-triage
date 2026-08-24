@@ -77,16 +77,26 @@
 		const empty = document.querySelector('#empty');
 		const resultContent = document.querySelector('#result-content');
 		const error = document.querySelector('#error');
+		let lastSubmittedKey = '';
 		form.addEventListener('submit', async (event) => {
 			event.preventDefault();
+			const sender = document.querySelector('#sender').value.trim();
+			const subject = document.querySelector('#subject').value.trim();
+			const body = document.querySelector('#body').value.trim();
+			const contentKey = `${sender.toLowerCase()}|${subject.toLowerCase()}|${body.toLowerCase()}`;
+			if (contentKey === lastSubmittedKey) {
+				error.textContent = 'Modifica el remitente, asunto o cuerpo antes de volver a clasificar.';
+				error.hidden = false;
+				return;
+			}
 			button.disabled = true;
 			button.textContent = 'Analizando...';
 			error.hidden = true;
 			const payload = {
 				message_id: `LOCAL-${Date.now()}`,
-				from: document.querySelector('#sender').value.trim(),
-				subject: document.querySelector('#subject').value.trim(),
-				body: document.querySelector('#body').value.trim()
+				from: sender,
+				subject,
+				body
 			};
 			try {
 				const response = await fetch('/api/classify/', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
@@ -100,6 +110,8 @@
 				document.querySelector('#meta').textContent = `${data.fallback_used ? 'Fallback heuristico' : 'Ollama'} · ${data.execution_time_ms} ms · ${data.message_id}`;
 				empty.hidden = true;
 				resultContent.hidden = false;
+				lastSubmittedKey = contentKey;
+				form.reset();
 			} catch (requestError) {
 				error.textContent = requestError.message;
 				error.hidden = false;
