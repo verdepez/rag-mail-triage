@@ -65,6 +65,30 @@ class TriageTests(SimpleTestCase):
 		self.assertEqual(saved_records[0]["id"], "TEST-001")
 		self.assertEqual(saved_records[0]["category"], "Ticket crítico")
 
+	def test_classify_endpoint_does_not_duplicate_same_content(self):
+		with tempfile.TemporaryDirectory() as temporary_directory:
+			dataset_path = Path(temporary_directory) / "datos.json"
+			dataset_path.write_text(json.dumps([{
+				"id": "OLD-001",
+				"from": self.email["from"],
+				"subject": self.email["subject"],
+				"body": self.email["body"],
+				"priority_score": 5,
+				"category": "Ticket crítico",
+			}]), encoding="utf-8")
+			with patch.object(views, "DATASET_PATH", dataset_path), patch.object(
+				views, "rag_engine", JSONRagEngine(str(dataset_path))
+			), patch("solucion.requests.post", side_effect=Exception("Ollama offline")):
+				response = self.client.post(
+					"/api/classify/", data={**self.email, "message_id": "NEW-001"}, content_type="application/json"
+				)
+
+			saved_records = json.loads(dataset_path.read_text(encoding="utf-8"))
+
+		self.assertEqual(response.status_code, 200)
+		self.assertEqual(len(saved_records), 1)
+		self.assertEqual(saved_records[0]["id"], "OLD-001")
+
 	def test_invalid_json_returns_bad_request(self):
 		response = self.client.post("/api/classify/", data="not-json", content_type="application/json")
 

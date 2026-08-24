@@ -42,5 +42,15 @@
     "category": "Informativo",
     "summary": "Procesamiento sobre: consulta",
     "suggested_action": "Archivar o revisar al cierre de la jornada."
+  },
+  {
+    "id": "LOCAL-1787605966520",
+    "from": "pablo@empresa.com",
+    "subject": "sistema caido",
+    "body": "no tengo acceso a los servicios",
+    "priority_score": 2,
+    "category": "Informativo",
+    "summary": "Procesamiento sobre: sistema caido",
+    "suggested_action": "Archivar o revisar al cierre de la jornada."
   }
 ]
