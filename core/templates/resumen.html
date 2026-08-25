@@ -46,80 +46,33 @@
 			<p class="intro">Pega un mensaje y el motor lo comparara con el historial para sugerir prioridad y proxima accion.</p>
 		</header>
 		<section class="workspace">
-			<form class="panel" id="classify-form">
+			<form class="panel" method="post">
+				{% csrf_token %}
 				<h2>Correo entrante</h2>
 				<label for="sender">Remitente</label>
-				<input id="sender" type="email" value="alertas@empresa.com" required>
+				<input id="sender" name="from" type="email" value="{{ request.POST.from|default:'alertas@empresa.com' }}" required>
 				<label for="subject">Asunto</label>
-				<input id="subject" type="text" placeholder="Ej: Corte urgente del servicio" required>
+				<input id="subject" name="subject" type="text" value="{{ request.POST.subject|default:'' }}" placeholder="Ej: Corte urgente del servicio" required>
 				<label for="body">Cuerpo del correo</label>
-				<textarea id="body" placeholder="Escribe o pega aqui el contenido del correo..." required></textarea>
-				<button id="submit-button" type="submit">Clasificar correo</button>
+				<textarea id="body" name="body" placeholder="Escribe o pega aqui el contenido del correo..." required>{{ request.POST.body|default:'' }}</textarea>
+				<button type="submit">Clasificar correo</button>
 				<p class="hint">El analisis ocurre localmente. Ollama es opcional: sin el modelo activo se usa el fallback heuristico.</p>
-				<div class="error" id="error" hidden></div>
+				<div class="error"{% if not error %} hidden{% endif %}>{{ error }}</div>
 			</form>
 			<section class="panel result" aria-live="polite">
 				<h2>Resultado</h2>
-				<p class="empty" id="empty">El resultado de la clasificacion aparecera aqui.</p>
-				<div class="result-content" id="result-content" hidden>
-					<div class="result-top"><span class="category" id="category"></span><div class="priority"><span id="priority"></span><small>PRIORIDAD / 5</small></div></div>
-					<p class="summary" id="summary"></p>
-					<div class="detail"><strong>Accion sugerida</strong><span id="action"></span></div>
-					<div class="detail"><strong>Casos historicos similares</strong><span id="matches"></span></div>
-					<p class="meta" id="meta"></p>
+				{% if not result %}<p class="empty">El resultado de la clasificacion aparecera aqui.</p>{% endif %}
+				{% if result %}
+				<div class="result-content">
+					<div class="result-top"><span class="category">{{ result.category }}</span><div class="priority"><span>{{ result.priority }}</span><small>PRIORIDAD / 5</small></div></div>
+					<p class="summary">{{ result.summary }}</p>
+					<div class="detail"><strong>Accion sugerida</strong><span>{{ result.suggested_action }}</span></div>
+					<div class="detail"><strong>Casos historicos similares</strong><span>{% if result.matched_history_ids %}{{ result.matched_history_ids|join:', ' }}{% else %}Sin coincidencias relevantes{% endif %}</span></div>
+					<p class="meta">{% if result.fallback_used %}Fallback heuristico{% else %}Ollama{% endif %} · {{ result.execution_time_ms }} ms · {{ result.message_id }}</p>
 				</div>
+				{% endif %}
 			</section>
 		</section>
 	</main>
-	<script>
-		const form = document.querySelector('#classify-form');
-		const button = document.querySelector('#submit-button');
-		const empty = document.querySelector('#empty');
-		const resultContent = document.querySelector('#result-content');
-		const error = document.querySelector('#error');
-		let lastSubmittedKey = '';
-		form.addEventListener('submit', async (event) => {
-			event.preventDefault();
-			const sender = document.querySelector('#sender').value.trim();
-			const subject = document.querySelector('#subject').value.trim();
-			const body = document.querySelector('#body').value.trim();
-			const contentKey = `${sender.toLowerCase()}|${subject.toLowerCase()}|${body.toLowerCase()}`;
-			if (contentKey === lastSubmittedKey) {
-				error.textContent = 'Modifica el remitente, asunto o cuerpo antes de volver a clasificar.';
-				error.hidden = false;
-				return;
-			}
-			button.disabled = true;
-			button.textContent = 'Analizando...';
-			error.hidden = true;
-			const payload = {
-				message_id: `LOCAL-${Date.now()}`,
-				from: sender,
-				subject,
-				body
-			};
-			try {
-				const response = await fetch('/api/classify/', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
-				const data = await response.json();
-				if (!response.ok) throw new Error(data.error || 'No se pudo clasificar el correo.');
-				document.querySelector('#category').textContent = data.category;
-				document.querySelector('#priority').textContent = data.priority;
-				document.querySelector('#summary').textContent = data.summary;
-				document.querySelector('#action').textContent = data.suggested_action;
-				document.querySelector('#matches').textContent = data.matched_history_ids.length ? data.matched_history_ids.join(', ') : 'Sin coincidencias relevantes';
-				document.querySelector('#meta').textContent = `${data.fallback_used ? 'Fallback heuristico' : 'Ollama'} · ${data.execution_time_ms} ms · ${data.message_id}`;
-				empty.hidden = true;
-				resultContent.hidden = false;
-				lastSubmittedKey = contentKey;
-				form.reset();
-			} catch (requestError) {
-				error.textContent = requestError.message;
-				error.hidden = false;
-			} finally {
-				button.disabled = false;
-				button.textContent = 'Clasificar correo';
-			}
-		});
-	</script>
 </body>
 </html>
