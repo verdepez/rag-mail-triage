@@ -82,5 +82,35 @@
     "category": "Requiere firma",
     "summary": "Procesamiento sobre: Contrato para firma",
     "suggested_action": "Revisar documento legal y gestionar firma electrónica."
+  },
+  {
+    "id": "LOCAL-1787610595026",
+    "from": "pablocesarbravosilva@gmail.com",
+    "subject": "consulta por gerente general",
+    "body": "necesito agendar con el gerente general una visita a sus dependencias por el concepto de compra de su empresa favor gestionar solicitud",
+    "priority_score": 4,
+    "category": "Requiere firma",
+    "summary": "Consulta para agendar visita con el gerente general por compra de empresa",
+    "suggested_action": "Responder con detalles de la visita e invitar al gerente general a verificar la agenda"
+  },
+  {
+    "id": "LOCAL-1787610693984",
+    "from": "clientes@empresa.com",
+    "subject": "solicito informacion",
+    "body": "necesito el brochure extenso sobre las inversiones en capitales extrangeros donde sindican que la moneda debe ser yuan y no dolar",
+    "priority_score": 2,
+    "category": "Informativo",
+    "summary": "Solicitud de documentación sobre inversiones en yuanes extranjeros",
+    "suggested_action": "Comprobar disponibilidad del material solicitado e iniciar el proceso de preparación"
+  },
+  {
+    "id": "LOCAL-1787610962874",
+    "from": "hellokitty@fkfkf.cl",
+    "subject": "testeo nuevo sitio",
+    "body": "solicito informe del rtesteo del nuevo sitio pompom.cl",
+    "priority_score": 2,
+    "category": "Informativo",
+    "summary": "Solicitud de informe del nuevo sitio web pompom.cl",
+    "suggested_action": "Responder con el informe solicitado"
   }
 ]
