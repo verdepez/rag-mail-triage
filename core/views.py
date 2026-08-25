@@ -1,11 +1,11 @@
 import json
 import os
+from uuid import uuid4
 from pathlib import Path
 from tempfile import NamedTemporaryFile
 
 from django.http import JsonResponse
 from django.shortcuts import render
-from django.views.decorators.csrf import csrf_exempt
 
 from solucion import JSONRagEngine, analyze_email
 
@@ -61,7 +61,13 @@ def _refresh_engine():
 	rag_engine = JSONRagEngine(str(DATASET_PATH))
 
 
-@csrf_exempt
+def _classify_email(email):
+	result = analyze_email(email, rag_engine)
+	if result["category"] != "Dato inválido" and _save_classified_email(email, result):
+		_refresh_engine()
+	return result
+
+
 def classify_email(request):
 	if request.method != "POST":
 		return JsonResponse({"error": "Usa el método POST."}, status=405)
@@ -71,14 +77,9 @@ def classify_email(request):
 		return JsonResponse({"error": "El cuerpo debe ser JSON válido."}, status=400)
 	if not isinstance(payload, dict):
 		return JsonResponse({"error": "El payload debe ser un objeto JSON."}, status=400)
-	result = analyze_email(payload, rag_engine)
-	if result["category"] != "Dato inválido":
-		if _save_classified_email(payload, result):
-			_refresh_engine()
-	return JsonResponse(result)
+	return JsonResponse(_classify_email(payload))
 
 
-@csrf_exempt
 def reload_corpus(request):
 	if request.method != "POST":
 		return JsonResponse({"error": "Usa el método POST."}, status=405)
@@ -87,5 +88,18 @@ def reload_corpus(request):
 
 
 def resumen(request):
-	return render(request, "resumen.html")
+	context = {}
+	if request.method == "POST":
+		email = {
+			"message_id": f"LOCAL-{uuid4().hex}",
+			"from": request.POST.get("from", ""),
+			"subject": request.POST.get("subject", ""),
+			"body": request.POST.get("body", ""),
+		}
+		result = _classify_email(email)
+		if result["category"] == "Dato inválido":
+			context["error"] = result["summary"]
+		else:
+			context["result"] = result
+	return render(request, "resumen.html", context)
 

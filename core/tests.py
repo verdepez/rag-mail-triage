@@ -64,6 +64,27 @@ class TriageTests(SimpleTestCase):
 		self.assertEqual(response.status_code, 200)
 		self.assertEqual(response.json()["message_id"], "TEST-001")
 
+	def test_resumen_classifies_with_django_post(self):
+		with tempfile.TemporaryDirectory() as temporary_directory:
+			dataset_path = Path(temporary_directory) / "datos.json"
+			dataset_path.write_text("[]", encoding="utf-8")
+			with patch.object(views, "DATASET_PATH", dataset_path), patch.object(
+				views, "rag_engine", JSONRagEngine(str(dataset_path))
+			), patch("solucion.requests.get", side_effect=Exception("Ollama offline")), patch(
+				"solucion.requests.post", side_effect=Exception("Ollama offline")
+			):
+				response = self.client.post(
+					"/resumen/",
+					data={
+						"from": self.email["from"],
+						"subject": self.email["subject"],
+						"body": self.email["body"],
+					},
+				)
+
+		self.assertEqual(response.status_code, 200)
+		self.assertContains(response, "Ticket crítico")
+
 	def test_classify_endpoint_persists_email_in_dataset(self):
 		with tempfile.TemporaryDirectory() as temporary_directory:
 			dataset_path = Path(temporary_directory) / "datos.json"
