@@ -1,61 +1,36 @@
-# Arquitectura ES1
+# Arquitectura del Sistema (Eva 2)
 
-## Componentes
+## Componentes Principales
 
-- `core/views.py`: expone la API, coordina el análisis y persiste resultados.
-- `solucion.py`: contiene validación, sanitización, recuperación TF-IDF, cliente Ollama y fallback.
-- `datos.json`: corpus histórico y persistencia local de correos clasificados.
-- `miproyecto/`: configuración y rutas Django.
-- `core/templates/resumen.html`: vista web de resultados.
+- `core/models.py`: Modelo relacional `Registro` con soporte de borrado lógico (`eliminado`, `fecha_eliminacion`, método `soft_delete`).
+- `core/views.py`: Operaciones CRUD (`lista`, `crear`, `editar`, `eliminar`), autenticación (`vista_login`, `vista_logout`) y control de acceso con decorador `@requiere_rol`.
+- `core/admin.py`: Configuración del panel de administración Django para `Registro` con columnas, filtros y búsqueda.
+- `core/templates/`: Vistas de interfaz HTML (`lista.html`, `form.html`, `confirmar.html`, `login.html`) protegidas con `{% csrf_token %}`.
+- `solucion.py`: Regla de decisión centralizada (`decidir`), sanitización de correos, RAG en memoria y cliente Ollama/fallback heurístico.
+- `miproyecto/`: Configuración del proyecto Django (`settings.py` con SQLite y middlewares de auth/messages; `urls.py` con rutas CRUD y admin).
+- `cargar_datos.py`: Migración de datos desde `datos.json` hacia SQLite.
+- `crear_usuarios.py`: Configuración de roles/grupos (`admin`, `normal`, `viewer`) y usuarios con contraseñas desde variables de entorno.
 
-## Flujo de datos
-
-```text
-Cliente
-	|
-	v
-POST /api/classify/
-	|
-	v
-Validación del payload
-	|
-	v
-Sanitización del correo
-	|
-	v
-TF-IDF sobre datos.json en memoria
-	|
-	+--> Ollama: modelo generativo disponible
-	|        |
-	|        +--> fallback heurístico si falla
-	v
-Resultado de triage
-	|
-	v
-Deduplicación y persistencia en datos.json
-	|
-	v
-Reconstrucción del índice RAG
-```
-
-## Decisiones actuales
-
-- No se utiliza base de datos relacional ni ORM.
-- La búsqueda RAG es local, en memoria y basada en TF-IDF.
-- Ollama es opcional: el servicio sigue funcionando con fallback.
-- El modelo se detecta mediante `/api/tags`; se excluyen modelos de embeddings.
-- La persistencia usa escritura temporal y reemplazo atómico del JSON.
-
-## Endpoints
-
-- `POST /api/classify/`: valida, clasifica y persiste un correo.
-- `POST /api/reload/`: reconstruye el índice desde `datos.json`.
-- `GET /resumen/`: renderiza el resumen web.
-
-## Evolución prevista
+## Flujo de Datos y Roles
 
 ```text
-TF-IDF local -> embeddings -> Qdrant
-Ollama local -> modelos y prompts versionados
-JSON local -> almacenamiento estructurado cuando el volumen lo justifique
+Usuario en Navegador
+        │
+        ▼
+   [ /login/ ] ──> Autenticación (django.contrib.auth)
+        │
+        ▼
+   [ /registros/ ] ──> Vista lista (Filtra eliminado=False)
+        │
+        ├── [ Crear ] (Roles: admin, normal) ──> Formulario ──> decidir() ──> Registro.objects.create()
+        ├── [ Editar ] (Rol: admin) ──────────> Formulario ──> Recálculo decidir() ──> reg.save()
+        └── [ Eliminar ] (Rol: admin) ────────> Confirmación ──> reg.soft_delete()
 ```
+
+## Control de Acceso (Autorización en Servidor)
+
+1. **`admin`**: Acceso total a ver, crear, editar y eliminar registros; superusuario en `/admin/`.
+2. **`normal`**: Acceso a ver listado y crear nuevos registros.
+3. **`viewer`**: Acceso de solo lectura al listado.
+
+La seguridad reside en el servidor mediante el decorador `@requiere_rol(*roles)`. Las comprobaciones en las plantillas HTML son complementarias para mejorar la interfaz de usuario.

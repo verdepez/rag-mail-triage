@@ -112,5 +112,45 @@
     "category": "Informativo",
     "summary": "Solicitud de informe del nuevo sitio web pompom.cl",
     "suggested_action": "Responder con el informe solicitado"
+  },
+  {
+    "id": "LOCAL-f54de8a1c0de4f56b7250b12cfc9b5b5",
+    "from": "alertas@empresa.com",
+    "subject": "problema de seguridad de la informacion",
+    "body": "en el sistema implementado ayer hay una brecha de seguridad y contiene errores de arquitectura",
+    "priority_score": 3,
+    "category": "Informativo",
+    "summary": "Se ha detectado una brecha de seguridad en el sistema recientemente implementado",
+    "suggested_action": "Iniciar inmediatamente la evaluación y corrección de la brecha de seguridad"
+  },
+  {
+    "id": "LOCAL-eadd5a9b63d74403a93f7e7e3f8c5503",
+    "from": "sumario@mail.com",
+    "subject": "contacto",
+    "body": "consulta por informacion",
+    "priority_score": 2,
+    "category": "Informativo",
+    "summary": "Correo de contacto sin especificar asunto específico, probablemente información general.",
+    "suggested_action": "Responder con información sobre cómo contactarse adecuadamente"
+  },
+  {
+    "id": "LOCAL-00ef11123eef462ba928cfa2d3efe33a",
+    "from": "sumario@mail.com",
+    "subject": "s",
+    "body": "s",
+    "priority_score": 1,
+    "category": "Informativo",
+    "summary": "Correo sin asunto ni contenido específico",
+    "suggested_action": "No requiere acción adicional"
+  },
+  {
+    "id": "LOCAL-17092593d14645c1baddbd0cf45bf7d0",
+    "from": "sumario@mail.com",
+    "subject": "sistema caido todo no responde",
+    "body": "Lorem Ipsum ha sido el texto de relleno estándar de las industrias desde el año 1500, cuando un impresor (N. del T. persona que se dedica a la imprenta) desconocido usó una galería de textos y los mezcló de tal manera que logró hacer un libro de textos especimen. No sólo sobrevivió 500 años, sino que tambien ingresó como texto de relleno en documentos electrónicos, quedando esencialmente igual al original. Fue popularizado en los 60s con la creación de las hojas \"Letraset\", las cuales contenian pasajes de Lorem Ipsum, y más recientemente con software de autoedición, como por ejemplo Aldus PageMaker, el cual incluye versiones de Lorem Ipsum.",
+    "priority_score": 5,
+    "category": "Ticket crítico",
+    "summary": "Sistema de correo electrónico caído y sin respuesta desde hace tiempo",
+    "suggested_action": "Iniciar inmediatamente un proceso de análisis para determinar la causa del fallo del sistema y tomar medidas preventivas para evitar futuros bloqueos operativos"
   }
 ]

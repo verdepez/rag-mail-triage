@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Confirmar Eliminación - Triage</title>
+    <style>
+        :root {
+            --bg-color: #f8fafc;
+            --card-bg: #ffffff;
+            --text-main: #0f172a;
+            --text-muted: #64748b;
+            --danger: #dc2626;
+            --danger-hover: #b91c1c;
+            --border: #e2e8f0;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: system-ui, -apple-system, sans-serif; }
+        body { background: var(--bg-color); color: var(--text-main); padding: 2rem; display: flex; align-items: center; justify-content: center; min-height: 80vh; }
+        .card { background: var(--card-bg); border: 1px solid var(--border); border-radius: 8px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); padding: 2rem; max-width: 500px; width: 100%; text-align: center; }
+        h1 { font-size: 1.25rem; font-weight: 700; color: var(--danger); margin-bottom: 1rem; }
+        p { color: var(--text-muted); font-size: 0.875rem; margin-bottom: 1.5rem; line-height: 1.6; }
+        .record-summary { background: #f1f5f9; padding: 1rem; border-radius: 6px; text-align: left; margin-bottom: 1.5rem; font-size: 0.875rem; }
+        .record-summary div { margin-bottom: 0.25rem; }
+        .btn { display: inline-flex; align-items: center; justify-content: center; padding: 0.6rem 1.25rem; border-radius: 6px; font-weight: 500; font-size: 0.875rem; text-decoration: none; cursor: pointer; border: 1px solid transparent; }
+        .btn-danger { background: var(--danger); color: #fff; }
+        .btn-danger:hover { background: var(--danger-hover); }
+        .btn-outline { border-color: var(--border); background: #fff; color: var(--text-main); }
+        .btn-outline:hover { background: #f1f5f9; }
+        .actions { display: flex; justify-content: center; gap: 1rem; }
+    </style>
+</head>
+<body>
+    <div class="card">
+        <h1>Confirmar Eliminación Lógica</h1>
+        <p>¿Estás seguro de que deseas eliminar este registro? La ficha se ocultará de la lista activa pero permanecerá resguardada en el archivo histórico de la base de datos (borrado lógico).</p>
+
+        <div class="record-summary">
+            <div><strong>ID:</strong> #{{ registro.pk }}</div>
+            <div><strong>Remitente:</strong> {{ registro.remitente }}</div>
+            <div><strong>Asunto:</strong> {{ registro.asunto }}</div>
+            <div><strong>Categoría:</strong> {{ registro.categoria }}</div>
+        </div>
+
+        <form method="POST">
+            {% csrf_token %}
+            <div class="actions">
+                <a href="{% url 'lista' %}" class="btn btn-outline">Cancelar</a>
+                <button type="submit" class="btn btn-danger">Sí, eliminar registro</button>
+            </div>
+        </form>
+    </div>
+</body>
+</html>
+

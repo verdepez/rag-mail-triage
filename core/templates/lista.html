@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bandeja de Triage - Registros</title>
+    <style>
+        :root {
+            --bg-color: #f8fafc;
+            --card-bg: #ffffff;
+            --text-main: #0f172a;
+            --text-muted: #64748b;
+            --primary: #2563eb;
+            --primary-hover: #1d4ed8;
+            --danger: #dc2626;
+            --danger-hover: #b91c1c;
+            --warning: #d97706;
+            --border: #e2e8f0;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: system-ui, -apple-system, sans-serif; }
+        body { background: var(--bg-color); color: var(--text-main); padding: 2rem; line-height: 1.5; }
+        .container { max-width: 1100px; margin: 0 auto; }
+        header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; }
+        .user-bar { display: flex; align-items: center; gap: 1rem; }
+        .btn { display: inline-flex; align-items: center; justify-content: center; padding: 0.5rem 1rem; border-radius: 6px; font-weight: 500; font-size: 0.875rem; text-decoration: none; cursor: pointer; border: 1px solid transparent; transition: all 0.15s ease; }
+        .btn-primary { background: var(--primary); color: #fff; }
+        .btn-primary:hover { background: var(--primary-hover); }
+        .btn-outline { border-color: var(--border); background: #fff; color: var(--text-main); }
+        .btn-outline:hover { background: #f1f5f9; }
+        .btn-danger { background: var(--danger); color: #fff; }
+        .btn-danger:hover { background: var(--danger-hover); }
+        .btn-sm { padding: 0.25rem 0.6rem; font-size: 0.75rem; }
+        .card { background: var(--card-bg); border: 1px solid var(--border); border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); overflow: hidden; }
+        .card-header { padding: 1rem 1.5rem; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border); }
+        table { width: 100%; border-collapse: collapse; text-align: left; font-size: 0.875rem; }
+        th { background: #f1f5f9; padding: 0.75rem 1rem; font-weight: 600; color: var(--text-muted); text-transform: uppercase; font-size: 0.75rem; }
+        td { padding: 0.875rem 1rem; border-bottom: 1px solid var(--border); vertical-align: middle; }
+        tr:last-child td { border-bottom: none; }
+        tr:hover td { background: #f8fafc; }
+        .badge { display: inline-block; padding: 0.25rem 0.5rem; border-radius: 9999px; font-size: 0.75rem; font-weight: 600; }
+        .badge-critico { background: #fee2e2; color: #991b1b; }
+        .badge-firma { background: #fef3c7; color: #92400e; }
+        .badge-info { background: #e0f2fe; color: #075985; }
+        .badge-invalido { background: #f1f5f9; color: #475569; }
+        .priority-dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 4px; }
+        .p-high { background: var(--danger); }
+        .p-mid { background: var(--warning); }
+        .p-low { background: #10b981; }
+        .actions { display: flex; gap: 0.5rem; }
+        .alert { padding: 0.75rem 1rem; border-radius: 6px; margin-bottom: 1.5rem; font-size: 0.875rem; }
+        .alert-error { background: #fee2e2; color: #991b1b; border: 1px solid #fca5a5; }
+        .alert-success { background: #dcfce7; color: #166534; border: 1px solid #86efac; }
+        .empty-state { padding: 3rem; text-align: center; color: var(--text-muted); }
+    </style>
+</head>
+<body>
+    <div class="container">
+        {% if messages %}
+            {% for msg in messages %}
+                <div class="alert alert-{% if msg.tags == 'error' %}error{% else %}success{% endif %}">
+                    {{ msg }}
+                </div>
+            {% endfor %}
+        {% endif %}
+
+        <header>
+            <div>
+                <h1 style="font-size: 1.5rem; font-weight: 700;">Bandeja de Triage - Eva 2</h1>
+                <p style="color: var(--text-muted); font-size: 0.875rem;">Sistema de Clasificación y Registro de Correos (SQLite + Roles)</p>
+            </div>
+            <div class="user-bar">
+                <span style="font-size: 0.875rem; color: var(--text-muted);">
+                    Usuario: <strong>{{ request.user.username }}</strong>
+                    {% if request.user.is_superuser %}(Superuser){% elif es_admin %}(Admin){% else %}(Viewer/Normal){% endif %}
+                </span>
+                <a href="{% url 'logout' %}" class="btn btn-outline btn-sm">Cerrar sesión</a>
+            </div>
+        </header>
+
+        <div class="card">
+            <div class="card-header">
+                <h2 style="font-size: 1.125rem; font-weight: 600;">Registros Activos ({{ registros.count }})</h2>
+                {% if puede_crear %}
+                    <a href="{% url 'crear' %}" class="btn btn-primary btn-sm">+ Crear Registro</a>
+                {% endif %}
+            </div>
+
+            {% if registros %}
+            <table>
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Remitente</th>
+                        <th>Asunto</th>
+                        <th>Categoría</th>
+                        <th>Prioridad</th>
+                        <th>Fecha</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for r in registros %}
+                    <tr>
+                        <td style="color: var(--text-muted); font-family: monospace;">#{{ r.pk }}</td>
+                        <td><strong>{{ r.remitente }}</strong></td>
+                        <td>
+                            <div>{{ r.asunto }}</div>
+                            <div style="font-size: 0.75rem; color: var(--text-muted);">{{ r.cuerpo|truncatechars:60 }}</div>
+                        </td>
+                        <td>
+                            {% if r.categoria == "Ticket crítico" %}
+                                <span class="badge badge-critico">{{ r.categoria }}</span>
+                            {% elif r.categoria == "Requiere firma" %}
+                                <span class="badge badge-firma">{{ r.categoria }}</span>
+                            {% elif r.categoria == "Informativo" %}
+                                <span class="badge badge-info">{{ r.categoria }}</span>
+                            {% else %}
+                                <span class="badge badge-invalido">{{ r.categoria }}</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if r.prioridad >= 4 %}
+                                <span class="priority-dot p-high"></span>{{ r.prioridad }} (Alta)
+                            {% elif r.prioridad == 3 %}
+                                <span class="priority-dot p-mid"></span>{{ r.prioridad }} (Media)
+                            {% else %}
+                                <span class="priority-dot p-low"></span>{{ r.prioridad }} (Baja)
+                            {% endif %}
+                        </td>
+                        <td style="color: var(--text-muted); font-size: 0.8rem;">
+                            {{ r.fecha|date:"d/m/Y H:i" }}
+                        </td>
+                        <td>
+                            <div class="actions">
+                                {% if es_admin %}
+                                    <a href="{% url 'editar' r.pk %}" class="btn btn-outline btn-sm">Editar</a>
+                                    <a href="{% url 'eliminar' r.pk %}" class="btn btn-danger btn-sm">Eliminar</a>
+                                {% else %}
+                                    <span style="color: var(--text-muted); font-size: 0.75rem;">Solo lectura</span>
+                                {% endif %}
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            {% else %}
+            <div class="empty-state">
+                <p>No hay registros activos actualmente.</p>
+                {% if puede_crear %}
+                    <p style="margin-top: 0.5rem;"><a href="{% url 'crear' %}" class="btn btn-primary btn-sm">Crear el primer registro</a></p>
+                {% endif %}
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</body>
+</html>
+
