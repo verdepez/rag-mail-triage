@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ accion }} Registro - Triage</title>
+    <style>
+        :root {
+            --bg-color: #f8fafc;
+            --card-bg: #ffffff;
+            --text-main: #0f172a;
+            --text-muted: #64748b;
+            --primary: #2563eb;
+            --primary-hover: #1d4ed8;
+            --danger: #dc2626;
+            --border: #cbd5e1;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: system-ui, -apple-system, sans-serif; }
+        body { background: var(--bg-color); color: var(--text-main); padding: 2rem; }
+        .container { max-width: 650px; margin: 0 auto; }
+        .card { background: var(--card-bg); border: 1px solid var(--border); border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); padding: 2rem; }
+        h1 { font-size: 1.25rem; font-weight: 700; margin-bottom: 1.5rem; }
+        .form-group { margin-bottom: 1.25rem; }
+        label { display: block; font-weight: 600; font-size: 0.875rem; margin-bottom: 0.35rem; }
+        input[type="text"], input[type="email"], input[type="number"], textarea {
+            width: 100%; padding: 0.6rem 0.75rem; border: 1px solid var(--border); border-radius: 6px; font-size: 0.875rem; outline: none; transition: border-color 0.2s;
+        }
+        input:focus, textarea:focus { border-color: var(--primary); ring: 2px solid rgba(37, 99, 235, 0.2); }
+        .hint { font-size: 0.75rem; color: var(--text-muted); margin-top: 0.25rem; }
+        .btn { display: inline-flex; align-items: center; justify-content: center; padding: 0.6rem 1.25rem; border-radius: 6px; font-weight: 500; font-size: 0.875rem; text-decoration: none; cursor: pointer; border: 1px solid transparent; }
+        .btn-primary { background: var(--primary); color: #fff; }
+        .btn-primary:hover { background: var(--primary-hover); }
+        .btn-outline { border-color: var(--border); background: #fff; color: var(--text-main); }
+        .btn-outline:hover { background: #f1f5f9; }
+        .actions { display: flex; justify-content: space-between; align-items: center; margin-top: 1.5rem; }
+        .alert-error { background: #fee2e2; color: #991b1b; border: 1px solid #fca5a5; padding: 0.75rem 1rem; border-radius: 6px; margin-bottom: 1.25rem; font-size: 0.875rem; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="card">
+            <h1>{{ accion }} Registro de Correo</h1>
+
+            {% if error %}
+                <div class="alert-error">{{ error }}</div>
+            {% endif %}
+
+            <form method="POST">
+                {% csrf_token %}
+
+                <div class="form-group">
+                    <label for="remitente">Remitente (Email o Nombre)</label>
+                    <input type="text" id="remitente" name="remitente"
+                           value="{% if registro %}{{ registro.remitente }}{% else %}{{ request.POST.remitente }}{% endif %}"
+                           placeholder="ejemplo@empresa.com" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="asunto">Asunto</label>
+                    <input type="text" id="asunto" name="asunto"
+                           value="{% if registro %}{{ registro.asunto }}{% else %}{{ request.POST.asunto }}{% endif %}"
+                           placeholder="Asunto descriptivo del mensaje" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="prioridad">Prioridad / Cantidad (1 - 5)</label>
+                    <input type="number" id="prioridad" name="prioridad"
+                           value="{% if registro %}{{ registro.prioridad }}{% elif request.POST.prioridad %}{{ request.POST.prioridad }}{% else %}1{% endif %}"
+                           min="1" max="5" required>
+                    <div class="hint">1 = Baja / Informativo, 4 = Requiere firma, 5 = Ticket crítico</div>
+                </div>
+
+                <div class="form-group">
+                    <label for="cuerpo">Cuerpo del Correo</label>
+                    <textarea id="cuerpo" name="cuerpo" rows="5"
+                              placeholder="Escribe el texto del correo..." required>{% if registro %}{{ registro.cuerpo }}{% else %}{{ request.POST.cuerpo }}{% endif %}</textarea>
+                    <div class="hint">La regla de decisión clasificará el correo automáticamente al guardar.</div>
+                </div>
+
+                <div class="actions">
+                    <a href="{% url 'lista' %}" class="btn btn-outline">Cancelar</a>
+                    <button type="submit" class="btn btn-primary">{{ accion }} Registro</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</body>
+</html>
+
