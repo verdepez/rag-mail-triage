@@ -262,6 +262,57 @@ Responde ÚNICAMENTE un JSON válido con las siguientes claves:
 
 
 # ==========================================
+# REGLA DE DECISIÓN (EVA 2 - INACAP)
+# ==========================================
+_global_engine = None
+
+
+def get_rag_engine() -> JSONRagEngine:
+    global _global_engine
+    if _global_engine is None:
+        dataset_file = os.path.join(os.path.dirname(__file__), "datos.json")
+        _global_engine = JSONRagEngine(dataset_file)
+    return _global_engine
+
+
+def decidir(asunto_o_email=None, cuerpo: str = "", remitente: str = "usuario@empresa.com", **kwargs) -> str:
+    """
+    Función de decisión del sistema de triage con 4 resultados:
+    - 'Ticket crítico'
+    - 'Requiere firma'
+    - 'Informativo'
+    - 'Dato inválido'
+    """
+    if isinstance(asunto_o_email, dict):
+        email = asunto_o_email
+    elif isinstance(asunto_o_email, (int, float)):
+        # Soporte para llamadas genéricas con cantidad/estado
+        estado = str(cuerpo or kwargs.get("estado", "")).lower()
+        if "critico" in estado or "urgente" in estado or asunto_o_email >= 10:
+            return "Ticket crítico"
+        elif "firma" in estado or "moroso" in estado:
+            return "Requiere firma"
+        elif "invalido" in estado:
+            return "Dato inválido"
+        return "Informativo"
+    else:
+        asunto_str = str(asunto_o_email or "")
+        cuerpo_str = str(cuerpo or "")
+        if not asunto_str.strip() and not cuerpo_str.strip():
+            return "Dato inválido"
+        email = {
+            "message_id": f"DECIDE-{int(time.time() * 1000)}",
+            "from": remitente or "usuario@empresa.com",
+            "subject": asunto_str,
+            "body": cuerpo_str,
+        }
+
+    engine = get_rag_engine()
+    resultado = analyze_email(email, engine)
+    return resultado.get("category", "Informativo")
+
+
+# ==========================================
 # 4. EJECUCIÓN DE PRUEBAS (DEMO DE ESTADOS)
 # ==========================================
 if __name__ == "__main__":
