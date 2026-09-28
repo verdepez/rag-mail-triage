@@ -1,14 +1,11 @@
-import json
 from functools import wraps
-from uuid import uuid4
 
 from django.contrib import messages
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
-from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 
-from solucion import analyze_email, decidir, get_rag_engine
+from solucion import decidir
 from .models import Registro
 
 
@@ -162,47 +159,3 @@ def eliminar(request, pk):  # DELETE logico
         messages.success(request, f"Registro '{reg.asunto}' eliminado correctamente.")
         return redirect("lista")
     return render(request, "confirmar.html", {"registro": reg})
-
-
-# ==========================================
-# 4. COMPATIBILIDAD API JSON Y RESUMEN
-# ==========================================
-def classify_email(request):
-    """Endpoint API JSON para clasificar correos."""
-    if request.method != "POST":
-        return JsonResponse({"error": "Usa el método POST."}, status=405)
-    try:
-        payload = json.loads(request.body)
-    except json.JSONDecodeError:
-        return JsonResponse({"error": "El cuerpo debe ser JSON válido."}, status=400)
-    if not isinstance(payload, dict):
-        return JsonResponse({"error": "El payload debe ser un objeto JSON."}, status=400)
-
-    engine = get_rag_engine()
-    result = analyze_email(payload, engine)
-    if result.get("category") != "Dato inválido":
-        Registro.objects.get_or_create(
-            remitente=payload.get("from", ""),
-            asunto=payload.get("subject", ""),
-            defaults={
-                "cuerpo": payload.get("body", ""),
-                "prioridad": result.get("priority", 1),
-                "categoria": result.get("category", "Informativo"),
-                "resumen": result.get("summary", ""),
-                "accion_sugerida": result.get("suggested_action", ""),
-            },
-        )
-    return JsonResponse(result)
-
-
-def reload_corpus(request):
-    """Endpoint para informar cantidad de registros activos."""
-    if request.method != "POST":
-        return JsonResponse({"error": "Usa el método POST."}, status=405)
-    total = Registro.objects.filter(eliminado=False).count()
-    return JsonResponse({"status": "ok", "records_loaded": total})
-
-
-def resumen(request):
-    """Redirección de la vista anterior al CRUD unificado."""
-    return redirect("lista")

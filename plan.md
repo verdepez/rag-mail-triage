@@ -43,8 +43,8 @@ Evolucionar el sistema desde el almacenamiento en archivo plano hacia una arquit
 | :--- | :--- |
 | **Must Have** *(Imprescindible)* | • Base de datos relacional SQLite configurada en `miproyecto/settings.py`.<br>• Modelo `Registro` con borrado lógico (`soft_delete`, `eliminado`, `fecha_eliminacion`).<br>• Panel administrativo de Django con `list_display`, filtros, búsqueda y campos de solo lectura.<br>• Operaciones CRUD completas (`lista`, `crear`, `editar`, `eliminar`) con recálculo de decisión en edición.<br>• Autenticación (`login`, `logout`) y roles por grupos (`admin`, `normal`, `viewer`) con decorador `@requiere_rol`.<br>• Formularios protegidos con `{% csrf_token %}`.<br>• Reutilización de regla de decisión intacta desde `solucion.py`. |
 | **Should Have** *(Importante)* | • Script `cargar_datos.py` para migrar los registros previos de `datos.json` a la base de datos.<br>• Script `crear_usuarios.py` para aprovisionar roles y usuarios leyendo contraseñas de `.env`.<br>• Suite de pruebas unitarias automatizadas (`core/tests.py`) validando CRUD, roles y modelo. |
-| **Could Have** *(Deseable)* | • Visualización de badges diferenciados por categoría y prioridad en el listado HTML.<br>• Compatibilidad backward con endpoints JSON existentes (`/api/classify/`). |
-| **Won't Have** *(Fuera de alcance)* | • Motores de bases de datos externos pesados (PostgreSQL, MySQL, Oracle).<br>• Modelos de usuario personalizados o contraseñas almacenadas fuera de `django.contrib.auth`.<br>• Autorización delegada exclusivamente a la plantilla sin validación en servidor. |
+| **Could Have** *(Deseable)* | • Visualización de badges diferenciados por categoría y prioridad en el listado HTML. |
+| **Won't Have** *(Fuera de alcance)* | • Motores de bases de datos externos pesados (PostgreSQL, MySQL, Oracle).<br>• Modelos de usuario personalizados o contraseñas almacenadas fuera de `django.contrib.auth`.<br>• Autorización delegada exclusivamente a la plantilla sin validación en servidor.<br>• Endpoints API sin autenticación ni control de roles heredados de la ES1 (`/api/classify/`, `/api/reload/`). |
 
 ---
 
