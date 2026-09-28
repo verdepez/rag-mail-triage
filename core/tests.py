@@ -182,3 +182,11 @@ class CrudAndAuthTests(TestCase):
         # Logout
         res_logout = self.client.get("/logout/")
         self.assertRedirects(res_logout, "/login/")
+
+    def test_legacy_api_endpoints_are_removed(self):
+        res_classify = self.client.post("/api/classify/", data="{}", content_type="application/json")
+        self.assertEqual(res_classify.status_code, 404)
+
+        res_reload = self.client.post("/api/reload/")
+        self.assertEqual(res_reload.status_code, 404)
+

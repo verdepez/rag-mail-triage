@@ -23,9 +23,4 @@ urlpatterns = [
 
     # Redirección raíz a la lista de registros
     path("", RedirectView.as_view(url="/registros/", permanent=False)),
-
-    # Endpoints de compatibilidad con entrega anterior
-    path("api/classify/", views.classify_email, name="classify-email"),
-    path("api/reload/", views.reload_corpus, name="reload-corpus"),
-    path("resumen/", views.resumen, name="resumen"),
 ]

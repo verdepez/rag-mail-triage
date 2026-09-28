@@ -31,3 +31,8 @@
 4. **Recálculo mandatorio de la decisión:**
    - *Propuesta inicial de la IA:* En la vista `editar`, actualizaba únicamente los campos editados guardando el modelo sin reevaluar la clasificación.
    - *Corrección aplicada:* Se obligó a invocar `reg.categoria = decidir(...)` antes de `reg.save()` para evitar inconsistencias donde el texto cambia pero la categoría queda obsoleta.
+
+5. **Eliminación de endpoints legados sin autenticación:**
+   - *Propuesta inicial de la IA:* Conservó los endpoints `/api/classify/` y `/api/reload/` de la ES1 por supuesta «compatibilidad», permitiendo que un usuario no autenticado insertara registros en la base de datos y evadiera la matriz de roles de Eva 2.
+   - *Corrección aplicada:* Se eliminaron completamente estas rutas y vistas heredadas. Toda creación y consulta de datos queda centralizada exclusivamente en las vistas CRUD protegidas con `@login_required` y `@requiere_rol`, cerrando cualquier vector de bypass anónimo.
+
